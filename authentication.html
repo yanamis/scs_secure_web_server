@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            text-align: center;
+            margin: 50px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .texts {
+            flex: 1;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #loginBtn {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #submitBtn {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #submitBtn:disabled {
+            background-color: #ddd;
+            color: #555;
+            cursor: not-allowed;
+        }
+    </style>
+    <script type="text/javascript">
+        // Function to generate cryptographic key
+        function generateKey(password, iterations, salt) {
+            // Convert base64 salt to Uint8Array
+            var binary_string = window.atob(salt);
+            var len = binary_string.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+
+            // Create salt buffer
+            var saltBuffer = new Uint8Array(bytes.buffer);
+
+            // Encode password to UTF-8
+            var encoder = new TextEncoder('utf-8');
+            var passphraseKey = encoder.encode(password);
+
+            // Import passphrase key
+            window.crypto.subtle.importKey(
+                'raw',
+                passphraseKey,
+                { name: 'PBKDF2' },
+                false,
+                ['deriveBits', 'deriveKey']
+            ).then(function (key) {
+                // Derive key using PBKDF2
+                return window.crypto.subtle.deriveKey(
+                    {
+                        "name": 'PBKDF2',
+                        "salt": saltBuffer,
+                        "iterations": iterations,
+                        "hash": 'SHA-512'
+                    },
+                    key,
+                    { "name": 'AES-GCM', "length": 256 },
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            }).then(function (webKey) {
+                // Export derived key
+                return crypto.subtle.exportKey("raw", webKey);
+            }).then(function (buffer) {
+                // Set SHA512 hash value and enable submit button
+                document.getElementById("sha512hash").value = bytesToHexString(buffer);
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById("submitBtn").click();
+            });
+        }
+
+        // Function to convert bytes to hexadecimal string
+        function bytesToHexString(bytes) {
+            if (!bytes)
+                return null;
+
+            bytes = new Uint8Array(bytes);
+            var hexBytes = [];
+
+            for (var i = 0; i < bytes.length; ++i) {
+                var byteString = bytes[i].toString(16);
+                if (byteString.length < 2)
+                    byteString = "0" + byteString;
+                hexBytes.push(byteString);
+            }
+
+            return hexBytes.join("");
+        }
+
+        // Function to initiate key generation
+        function generateKey1() {
+            var strTxtA = document.getElementById('userInput').value;
+            var strTxtB = document.getElementById('passwordInput').value;
+            var strTxt = strTxtA + strTxtB;
+
+            var salt = document.getElementById("saltInput").value;
+            var iteration = document.getElementById("iterationInput").value;
+            generateKey(strTxt, iteration, salt);
+        }
+    </script>
+</head>
+<body>
+    <h1>Authentication</h1>
+    <!-- User and Password Input Fields -->
+    <nobr>User: </nobr><input type="text" id="userInput" name="userInput" class="texts" autofocus="">
+    <nobr>Password: </nobr><input type="password" id="passwordInput" name="passwordInput" class="texts">
+
+    <!-- Hidden Fields for Iteration and Salt -->
+    <input id="iterationInput" type="hidden" name="iterationInput" value="111" readonly>
+    <input id="saltInput" type="hidden" name="saltInput" value="IuGNH1p7tgC4gd7vFUK80Q==" readonly>
+
+    <!-- Login Button Triggering Key Generation -->
+    <input id="loginBtn" type="button" value="Login" onclick="generateKey1();"/>
+
+    <!-- Form for SHA512 Hash and Submit Button -->
+    <form action="" method="post">
+        <p><input id="sha512hash" type="hidden" name="sha512hash" value="" readonly>
+        <input id="submitBtn" type=submit value=Submit disabled></p>
+    </form>
+</body>
+</html>

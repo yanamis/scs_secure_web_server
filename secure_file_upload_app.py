@@ -9,9 +9,9 @@ from streaming_form_data.targets import FileTarget
 from werkzeug.utils import secure_filename
 
 # Path to the folder where files will be stored
-UPLOAD_FOLDER = "/home/yanam/Pobrane/scs_secure_web_server"
+UPLOAD_FOLDER = "/home/nikosiz/scs_secure_web_server"
 # Temporary directory for processing files
-MY_UPLOAD_DIR = "/home/yanam/Pobrane/scs_secure_web_server"
+MY_UPLOAD_DIR = "/home/nikosiz/scs_secure_web_server/upload"
 tempfile.tempdir = MY_UPLOAD_DIR
 
 app = Flask(__name__)
@@ -50,7 +50,7 @@ def login():
             return abort(413)
         # Check the provided SHA512 hash for authentication
         provided_hash = request.form['sha512hash']
-        if provided_hash == 'ef0090ac4b5c20676b9bf23c9666e171aa39016efabbdf21ca9a867cbd785de6':
+        if provided_hash == 'b05b77171c1c2353c6b4ce8595d214b85e191b487772cd620631a64e5861f456':
             # Set the user session and redirect to the upload page upon successful login
             session['user'] = "ran"
             return redirect('/upload')
