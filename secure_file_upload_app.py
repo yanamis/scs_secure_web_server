@@ -50,7 +50,7 @@ def login():
             return abort(413)
         # Check the provided SHA512 hash for authentication
         provided_hash = request.form['sha512hash']
-        if provided_hash == 'b05b77171c1c2353c6b4ce8595d214b85e191b487772cd620631a64e5861f456':
+        if provided_hash == 'fa8c4e2184ce60bedcad15320b91d63557d73e6c52c04540aaa4e3314200ce8e':
             # Set the user session and redirect to the upload page upon successful login
             session['user'] = "ran"
             return redirect('/upload')
